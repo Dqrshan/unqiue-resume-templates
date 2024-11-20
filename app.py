@@ -1,13 +1,17 @@
 import random
 from flask import Flask, request, jsonify, render_template_string
+from flask_cors import CORS
 from transformers import pipeline
 from transformers import pipeline,TFAutoModelForCausalLM,AutoTokenizer
 
 app = Flask(__name__)
 
+CORS(app)
+
 # Load the language model from Hugging Face
 model_name = "gpt2"
 model = TFAutoModelForCausalLM.from_pretrained(model_name)
+model.generation_config.pad_token_id = model.generation_config.eos_token_id
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 # Initialize the text-generation pipeline
@@ -41,7 +45,7 @@ def generate_resume_content(data):
     Education: {data['education']}
     Projects: {data['projects']}
     """
-    
+
     response = generator(prompt, max_length=300, num_return_sequences=1)[0]['generated_text']
     return response
 
@@ -53,7 +57,7 @@ def generate_resume():
 
     # Generate unique styles for each resume
     styles = generate_dynamic_styles()
-    
+
     # Define a base template with placeholders for dynamic styling
     template = """
     <html>
